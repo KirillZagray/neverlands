@@ -6,7 +6,7 @@
 require_once __DIR__ . '/../config/config.php';
 
 $token = TELEGRAM_BOT_TOKEN;
-$webAppUrl = "https://happy-places-design.loca.lt";
+$webAppUrl = "https://neverlands-three.vercel.app";
 
 echo "🔧 Настройка Telegram Web App\n";
 echo "==============================\n\n";

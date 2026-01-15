@@ -82,7 +82,7 @@ function sendMessage($chatId, $text) {
 function sendMessageWithButton($chatId, $text) {
     $token = TELEGRAM_BOT_TOKEN;
     $url = "https://api.telegram.org/bot{$token}/sendMessage";
-    $webAppUrl = "https://full-suns-search.loca.lt";
+    $webAppUrl = "https://neverlands-three.vercel.app";
 
     $data = [
         'chat_id' => $chatId,
