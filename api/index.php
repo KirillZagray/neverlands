@@ -13,11 +13,19 @@ $request_method = $_SERVER['REQUEST_METHOD'];
 // Remove query string and base path
 $path = parse_url($request_uri, PHP_URL_PATH);
 $path = str_replace('/NLTv1/backend/api', '', $path);
+$path = str_replace('/api/index.php', '', $path); // Remove /api/index.php
+$path = str_replace('/api', '', $path); // Remove /api prefix
+$path = str_replace('/index', '', $path); // Remove /index
 $path = trim($path, '/');
 
 // Parse path segments
 $segments = explode('/', $path);
 $endpoint = $segments[0] ?? 'index';
+
+// If endpoint is index.php or empty, default to index
+if ($endpoint === 'index.php' || empty($endpoint)) {
+    $endpoint = 'index';
+}
 
 // Route to appropriate handler
 try {
