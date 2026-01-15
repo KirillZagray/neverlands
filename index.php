@@ -24,30 +24,19 @@ $path = parse_url($requestUri, PHP_URL_PATH);
 // Remove leading slash
 $path = ltrim($path, '/');
 
-// If path starts with 'api/', route to api folder
-if (strpos($path, 'api/') === 0) {
-    $apiPath = substr($path, 4); // Remove 'api/' prefix
-
-    if (empty($apiPath)) {
-        $apiPath = 'index.php';
-    } else if (!preg_match('/\.php$/', $apiPath)) {
-        $apiPath .= '.php';
+// If path starts with 'api', route to api/index.php
+if (strpos($path, 'api') === 0 || strpos($path, 'api/') === 0) {
+    // Modify REQUEST_URI to remove /api prefix for the API router
+    $_SERVER['REQUEST_URI'] = '/' . substr($path, 4); // Remove 'api/' or 'api'
+    if (empty($_SERVER['REQUEST_URI']) || $_SERVER['REQUEST_URI'] === '/') {
+        $_SERVER['REQUEST_URI'] = '/index';
     }
-
-    $targetFile = __DIR__ . '/api/' . $apiPath;
-
-    if (file_exists($targetFile)) {
-        require $targetFile;
-        exit;
-    } else {
-        header('Content-Type: application/json');
-        echo json_encode([
-            'success' => false,
-            'error' => 'Endpoint not found: ' . $apiPath,
-            'tried' => $targetFile
-        ]);
-        exit;
+    // Add back query string
+    if (!empty($_SERVER['QUERY_STRING'])) {
+        $_SERVER['REQUEST_URI'] .= '?' . $_SERVER['QUERY_STRING'];
     }
+    require __DIR__ . '/api/index.php';
+    exit;
 }
 
 // Default response
