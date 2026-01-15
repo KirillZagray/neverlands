@@ -1,0 +1,6 @@
+.map-page { padding: 20px; text-align: center; }
+.map-container { max-width: 400px; margin: 0 auto; }
+.map-info { background: var(--tg-theme-secondary-bg-color, #2C3E50); padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+.map-controls { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.map-controls button { width: 60px; height: 60px; font-size: 24px; background: var(--tg-theme-button-color, #3498db); border: none; border-radius: 10px; cursor: pointer; }
+.horizontal-controls { display: flex; gap: 60px; }

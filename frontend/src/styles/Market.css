@@ -1,0 +1,10 @@
+.market-page { padding: 20px; }
+.category-tabs { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; }
+.category-tabs button { padding: 10px 20px; background: var(--tg-theme-secondary-bg-color, #2C3E50); color: white; border: none; border-radius: 5px; cursor: pointer; }
+.category-tabs button.active { background: var(--tg-theme-button-color, #3498db); }
+.market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
+.market-item { background: var(--tg-theme-secondary-bg-color, #2C3E50); padding: 15px; border-radius: 10px; text-align: center; }
+.market-item img { width: 80px; height: 80px; object-fit: contain; margin-bottom: 10px; }
+.item-level, .item-stock { font-size: 12px; color: #95A5A6; margin: 5px 0; }
+.item-price { font-size: 16px; font-weight: bold; color: #F39C12; margin: 10px 0; }
+.btn-buy { width: 100%; background: #27AE60; color: white; margin-top: 10px; }

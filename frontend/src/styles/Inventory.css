@@ -1,0 +1,12 @@
+.inventory-page { padding: 20px; }
+.empty-inventory { text-align: center; padding: 40px; color: #95A5A6; }
+.inventory-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+.inventory-item { background: var(--tg-theme-secondary-bg-color, #2C3E50); padding: 15px; border-radius: 10px; display: flex; gap: 15px; }
+.item-image img { width: 60px; height: 60px; object-fit: contain; }
+.item-info { flex: 1; }
+.item-info h3 { margin-bottom: 5px; font-size: 16px; }
+.item-stats, .item-price, .item-weight { font-size: 12px; color: #95A5A6; margin: 2px 0; }
+.item-actions { display: flex; flex-direction: column; gap: 5px; }
+.btn-equip, .btn-sell { padding: 8px 12px; font-size: 12px; }
+.btn-equip { background: #27AE60; color: white; }
+.btn-sell { background: #E74C3C; color: white; }
