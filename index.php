@@ -4,6 +4,17 @@
  * Redirects /api/* requests to api/ folder
  */
 
+// CORS headers
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-Telegram-Init-Data');
+
+// Handle preflight
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
+
 // Get the request URI
 $requestUri = $_SERVER['REQUEST_URI'];
 
@@ -27,6 +38,14 @@ if (strpos($path, 'api/') === 0) {
 
     if (file_exists($targetFile)) {
         require $targetFile;
+        exit;
+    } else {
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => false,
+            'error' => 'Endpoint not found: ' . $apiPath,
+            'tried' => $targetFile
+        ]);
         exit;
     }
 }
