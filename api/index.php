@@ -58,6 +58,10 @@ try {
             require_once __DIR__ . '/battle.php';
             break;
 
+        case 'debug':
+            require_once __DIR__ . '/debug.php';
+            break;
+
         case '':
         case 'index':
             jsonSuccess([
