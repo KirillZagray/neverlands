@@ -7,13 +7,22 @@ class Database {
     private static $instance = null;
     private $connection;
 
-    private $host = 'localhost';
-    private $database = 'nl';
-    private $username = 'root';
-    private $password = 'root';
-    private $charset = 'cp1251';
+    private $host;
+    private $database;
+    private $username;
+    private $password;
+    private $charset;
 
     private function __construct() {
+        // Read from environment variables or use defaults
+        $this->host = getenv('DB_HOST') ?: 'localhost';
+        $this->database = getenv('DB_NAME') ?: 'nl';
+        $this->username = getenv('DB_USER') ?: 'root';
+        $this->password = getenv('DB_PASS') ?: 'root';
+        $this->charset = getenv('DB_CHARSET') ?: 'cp1251';
+
+        error_log("Database config - Host: {$this->host}, DB: {$this->database}, User: {$this->username}");
+
         try {
             $this->connection = new mysqli(
                 $this->host,
