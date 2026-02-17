@@ -1,36 +1,91 @@
 <?php
 /**
  * Authentication API
- * Handles Telegram WebApp authentication
+ * Handles Telegram WebApp authentication with HMAC-SHA256 validation
+ *
+ * POST /api/auth  { initData, user }
  */
 
 $db = Database::getInstance();
 
-if ($request_method === 'POST') {
-    // Get Telegram init data
-    $input = json_decode(file_get_contents('php://input'), true);
-    $initData = $input['initData'] ?? '';
-    $userData = $input['user'] ?? null;
+/**
+ * Проверяет подпись initData от Telegram WebApp.
+ * https://core.telegram.org/bots/webapps#validating-data-received-via-the-mini-app
+ */
+function validateTelegramInitData(string $initData, string $botToken): bool
+{
+    if (!$initData || !$botToken) return false;
 
-    if (!$userData) {
-        jsonError('No user data provided');
+    // Разобрать строку как URL query string
+    $params = [];
+    foreach (explode('&', $initData) as $chunk) {
+        $pair = explode('=', $chunk, 2);
+        if (count($pair) === 2) {
+            $params[urldecode($pair[0])] = urldecode($pair[1]);
+        }
     }
 
-    // For local testing, skip Telegram validation
-    // In production, validate init data against bot token
-    $telegramId = $userData['id'];
-    $username = $userData['username'] ?? 'User' . $telegramId;
-    $firstName = $userData['first_name'] ?? '';
-    $lastName = $userData['last_name'] ?? '';
+    $receivedHash = $params['hash'] ?? '';
+    if (!$receivedHash) return false;
+    unset($params['hash']);
 
-    // Check if user exists
+    // Отсортировать по ключу и собрать строку проверки
+    ksort($params);
+    $checkParts = [];
+    foreach ($params as $key => $value) {
+        $checkParts[] = "$key=$value";
+    }
+    $checkString = implode("\n", $checkParts);
+
+    // HMAC-SHA256: секрет = HMAC("WebAppData", bot_token)
+    $secretKey    = hash_hmac('sha256', $botToken, 'WebAppData', true);
+    $expectedHash = hash_hmac('sha256', $checkString, $secretKey);
+
+    return hash_equals($expectedHash, $receivedHash);
+}
+
+if ($request_method === 'POST') {
+    $input    = json_decode(file_get_contents('php://input'), true);
+    $initData = $input['initData'] ?? '';
+    $userData = $input['user']     ?? null;
+
+    if (!$userData) {
+        jsonError('Не переданы данные пользователя');
+    }
+
+    // Проверка подписи Telegram (пропускается только если токен не задан — dev-режим)
+    $botToken = TELEGRAM_BOT_TOKEN;
+    if ($botToken) {
+        if (!$initData) {
+            jsonError('initData обязателен в production', 403);
+        }
+        if (!validateTelegramInitData($initData, $botToken)) {
+            jsonError('Неверная подпись Telegram. Откройте приложение заново.', 403);
+        }
+        // Проверка срока действия (24 часа)
+        $params   = [];
+        foreach (explode('&', $initData) as $chunk) {
+            $pair = explode('=', $chunk, 2);
+            if (count($pair) === 2) $params[urldecode($pair[0])] = urldecode($pair[1]);
+        }
+        $authDate = intval($params['auth_date'] ?? 0);
+        if ($authDate && (time() - $authDate) > 86400) {
+            jsonError('Данные авторизации устарели. Перезапустите приложение.', 403);
+        }
+    }
+
+    $telegramId = $userData['id'];
+    $username   = $userData['username']   ?? 'User' . $telegramId;
+    $firstName  = $userData['first_name'] ?? '';
+    $lastName   = $userData['last_name']  ?? '';
+
+    // Проверить существующего пользователя
     $stmt = $db->prepare("SELECT * FROM user WHERE telegram_id = ? LIMIT 1");
     $stmt->bind_param('i', $telegramId);
     $stmt->execute();
     $result = $stmt->get_result();
 
     if ($result->num_rows > 0) {
-        // Existing user - update last login
         $user = $result->fetch_assoc();
 
         $updateStmt = $db->prepare("UPDATE user SET last = UNIX_TIMESTAMP() WHERE id = ?");
@@ -39,21 +94,18 @@ if ($request_method === 'POST') {
 
         jsonSuccess([
             'user' => [
-                'id' => $user['id'],
+                'id'          => $user['id'],
                 'telegram_id' => $telegramId,
-                'login' => from_win($user['login']),
-                'level' => $user['level'],
-                'nv' => $user['nv']
+                'login'       => from_win($user['login']),
+                'level'       => $user['level'],
+                'nv'          => $user['nv']
             ],
             'isNew' => false
-        ], 'Login successful');
+        ], 'Вход выполнен');
 
     } else {
-        // New user - create account
+        // Новый пользователь
         $login = t($username);
-        $defaultPass = '';
-        $defaultEmail = '';
-        $defaultEmpty = '';
 
         $insertStmt = $db->prepare("
             INSERT INTO user (
@@ -75,22 +127,20 @@ if ($request_method === 'POST') {
 
             jsonSuccess([
                 'user' => [
-                    'id' => $newUserId,
+                    'id'          => $newUserId,
                     'telegram_id' => $telegramId,
-                    'login' => $username,
-                    'level' => 0,
-                    'nv' => 100
+                    'login'       => $username,
+                    'level'       => 0,
+                    'nv'          => 100
                 ],
                 'isNew' => true
-            ], 'Registration successful');
+            ], 'Регистрация успешна');
         } else {
-            $error = $insertStmt->error;
-            error_log("Insert error: " . $error);
-            jsonError('Failed to create user: ' . $error);
+            jsonError('Ошибка создания аккаунта: ' . $insertStmt->error);
         }
     }
 
 } else {
-    jsonError('Method not allowed', 405);
+    jsonError('Метод не поддерживается', 405);
 }
 ?>

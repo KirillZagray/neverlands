@@ -58,6 +58,16 @@ try {
             require_once __DIR__ . '/battle.php';
             break;
 
+        case 'professions':
+        case 'profession':
+            require_once __DIR__ . '/professions.php';
+            break;
+
+        case 'equipment':
+        case 'equip':
+            require_once __DIR__ . '/equipment.php';
+            break;
+
         case 'debug':
             require_once __DIR__ . '/debug.php';
             break;
@@ -74,7 +84,9 @@ try {
                     '/market' => 'Market/shop',
                     '/map' => 'Map and locations',
                     '/chat' => 'Chat messages',
-                    '/battle' => 'Battle system'
+                    '/battle'      => 'Боевая система (PvE)',
+                    '/professions' => 'Профессии (шахтёр, рыбак, лекарь, ювелир, торговец)',
+                    '/equipment'   => 'Экипировка (надеть/снять предмет)'
                 ]
             ], 'API is running');
             break;

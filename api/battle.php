@@ -8,6 +8,15 @@
 
 $db = Database::getInstance()->getConnection();
 
+// Кулдаун между боями (секунды)
+define('BATTLE_COOLDOWN', 10);
+
+// Добавить колонку last_battle если нет
+$colCheck = $db->query("SHOW COLUMNS FROM `user` LIKE 'last_battle'");
+if ($colCheck && $colCheck->num_rows === 0) {
+    $db->query("ALTER TABLE `user` ADD COLUMN `last_battle` INT NOT NULL DEFAULT 0");
+}
+
 // Шаблоны монстров по зонам (можно перенести в БД)
 $MONSTERS = [
     1 => ['name' => 'Волк',      'zone' => 1, 'hp' => 25,  'sila' => 4,  'lovk' => 3, 'exp' => 8,   'gold' => 3],
@@ -54,7 +63,8 @@ if ($request_method === 'GET') {
 
     // Получить данные персонажа
     $stmt = $db->prepare("
-        SELECT id, hp, hp_all, sila, lovk, uda4a, zdorov, znan, mudr, exp, level, nv
+        SELECT id, hp, hp_all, sila, lovk, uda4a, zdorov, znan, mudr, exp, level, nv,
+               COALESCE(last_battle, 0) AS last_battle
         FROM user WHERE id = ? LIMIT 1
     ");
     $stmt->bind_param('i', $userId);
@@ -63,6 +73,14 @@ if ($request_method === 'GET') {
 
     if (!$player) {
         jsonError('Игрок не найден', 404);
+    }
+
+    // Проверить кулдаун между боями
+    $lastBattle = intval($player['last_battle']);
+    $elapsed    = time() - $lastBattle;
+    if ($lastBattle > 0 && $elapsed < BATTLE_COOLDOWN) {
+        $wait = BATTLE_COOLDOWN - $elapsed;
+        jsonError("Подождите ещё {$wait} сек. перед следующим боем");
     }
 
     // Проверить HP
@@ -135,13 +153,14 @@ if ($request_method === 'GET') {
             $log[] = "*** Уровень повышен до {$newLevel}! ***";
         }
 
+        $now = time();
         if ($levelUp) {
             $freeStat = intval($player['free_stat'] ?? 0) + 3;
-            $stmt = $db->prepare("UPDATE user SET hp = ?, exp = ?, nv = ?, level = ?, free_stat = ? WHERE id = ?");
-            $stmt->bind_param('iiiiii', $newHp, $newExp, $newNv, $newLevel, $freeStat, $userId);
+            $stmt = $db->prepare("UPDATE user SET hp = ?, exp = ?, nv = ?, level = ?, free_stat = ?, last_battle = ? WHERE id = ?");
+            $stmt->bind_param('iiiiiii', $newHp, $newExp, $newNv, $newLevel, $freeStat, $now, $userId);
         } else {
-            $stmt = $db->prepare("UPDATE user SET hp = ?, exp = ?, nv = ? WHERE id = ?");
-            $stmt->bind_param('iiii', $newHp, $newExp, $newNv, $userId);
+            $stmt = $db->prepare("UPDATE user SET hp = ?, exp = ?, nv = ?, last_battle = ? WHERE id = ?");
+            $stmt->bind_param('iiiii', $newHp, $newExp, $newNv, $now, $userId);
         }
         $stmt->execute();
 
@@ -158,8 +177,9 @@ if ($request_method === 'GET') {
     } else {
         $log[] = "=== Поражение! {$monster['name']} победил. ===";
 
-        $stmt = $db->prepare("UPDATE user SET hp = ? WHERE id = ?");
-        $stmt->bind_param('ii', $newHp, $userId);
+        $now  = time();
+        $stmt = $db->prepare("UPDATE user SET hp = ?, last_battle = ? WHERE id = ?");
+        $stmt->bind_param('iii', $newHp, $now, $userId);
         $stmt->execute();
 
         jsonSuccess([

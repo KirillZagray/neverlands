@@ -38,6 +38,17 @@ if ($request_method === 'GET') {
         jsonError('Сообщение слишком длинное (максимум 500 символов)');
     }
 
+    // Рейт-лимит: не чаще одного сообщения в 3 секунды
+    $rateStmt = $db->prepare("SELECT MAX(id) AS last_id, MAX(time) AS last_time FROM chat WHERE pl_id = ?");
+    if ($rateStmt) {
+        $rateStmt->bind_param('i', $userId);
+        $rateStmt->execute();
+        $rateRow = $rateStmt->get_result()->fetch_assoc();
+        if ($rateRow && $rateRow['last_time'] && (time() - intval($rateRow['last_time'])) < 3) {
+            jsonError('Не так быстро! Подождите 3 секунды между сообщениями', 429);
+        }
+    }
+
     // Получить login игрока
     $stmt = $db->prepare("SELECT login FROM user WHERE id = ? LIMIT 1");
     $stmt->bind_param('i', $userId);
