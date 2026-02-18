@@ -24,6 +24,17 @@ $path = parse_url($requestUri, PHP_URL_PATH);
 // Remove leading slash
 $path = ltrim($path, '/');
 
+// Route /bot/* to bot PHP files
+if (strpos($path, 'bot/') === 0) {
+    $botFile = __DIR__ . '/' . $path;
+    if (file_exists($botFile) && !is_dir($botFile)) {
+        require $botFile;
+        exit;
+    }
+    http_response_code(404);
+    exit;
+}
+
 // If path starts with 'api', route to api/index.php
 if (strpos($path, 'api') === 0 || strpos($path, 'api/') === 0) {
     // Modify REQUEST_URI to remove /api prefix for the API router
