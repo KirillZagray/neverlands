@@ -9,22 +9,22 @@ describe('HpBar', () => {
 
   test('green bar when HP > 60%', () => {
     const { container } = render(<HpBar hp={70} hpMax={100} />)
-    expect(container.querySelector('.hp-bar').style.background).toBe('#30d158')
+    expect(container.querySelector('.hp-bar').style.background).toBe('rgb(48, 209, 88)')
   })
 
   test('green bar at exactly 61%', () => {
     const { container } = render(<HpBar hp={61} hpMax={100} />)
-    expect(container.querySelector('.hp-bar').style.background).toBe('#30d158')
+    expect(container.querySelector('.hp-bar').style.background).toBe('rgb(48, 209, 88)')
   })
 
   test('yellow bar when HP is 31–60%', () => {
     const { container } = render(<HpBar hp={50} hpMax={100} />)
-    expect(container.querySelector('.hp-bar').style.background).toBe('#ffd60a')
+    expect(container.querySelector('.hp-bar').style.background).toBe('rgb(255, 214, 10)')
   })
 
   test('red bar when HP <= 30%', () => {
     const { container } = render(<HpBar hp={20} hpMax={100} />)
-    expect(container.querySelector('.hp-bar').style.background).toBe('#ff453a')
+    expect(container.querySelector('.hp-bar').style.background).toBe('rgb(255, 69, 58)')
   })
 
   test('bar width matches percentage', () => {
