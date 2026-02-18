@@ -1,6 +1,6 @@
-api/
-bot/
-config/
+/api/
+/bot/
+/config/
 index.php
 nixpacks.toml
 railway.json
