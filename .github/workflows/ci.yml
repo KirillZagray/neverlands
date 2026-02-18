@@ -1,0 +1,105 @@
+name: CI — Tests & Smoke
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    name: Unit tests (Vitest)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm install
+
+      - name: Run unit tests
+        working-directory: frontend
+        run: npm test
+
+      # ── Уведомление в Telegram ──────────────────────────────────────────
+      - name: Notify Telegram — success
+        if: success()
+        env:
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          TEXT="✅ <b>NeverLands CI passed</b>%0A"
+          TEXT+="Branch: <code>${{ github.ref_name }}</code>%0A"
+          TEXT+="Commit: <code>${{ github.sha }}</code>%0A"
+          TEXT+="By: ${{ github.actor }}"
+          curl -s -X POST \
+            "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+            -d "chat_id=${CHAT_ID}&parse_mode=HTML&text=${TEXT}"
+
+      - name: Notify Telegram — failure
+        if: failure()
+        env:
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          TEXT="❌ <b>NeverLands CI FAILED</b>%0A"
+          TEXT+="Branch: <code>${{ github.ref_name }}</code>%0A"
+          TEXT+="Commit: <code>${{ github.sha }}</code>%0A"
+          TEXT+="By: ${{ github.actor }}%0A"
+          TEXT+="🔗 <a href='https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'>Logs</a>"
+          curl -s -X POST \
+            "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+            -d "chat_id=${CHAT_ID}&parse_mode=HTML&text=${TEXT}"
+
+  smoke:
+    name: Smoke test (Vercel)
+    runs-on: ubuntu-latest
+    needs: test
+    # Запускается только если задан VERCEL_URL (переменная репозитория)
+    if: vars.VERCEL_URL != ''
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Wait for Vercel deployment (30s)
+        run: sleep 30
+
+      - name: Run smoke test
+        id: smoke
+        run: node scripts/smoke-test.js ${{ vars.VERCEL_URL }}
+
+      - name: Notify Telegram — smoke passed
+        if: success()
+        env:
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          TEXT="🌐 <b>Smoke-test passed</b>%0A"
+          TEXT+="Фронт открывается: ${{ vars.VERCEL_URL }}"
+          curl -s -X POST \
+            "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+            -d "chat_id=${CHAT_ID}&parse_mode=HTML&text=${TEXT}"
+
+      - name: Notify Telegram — smoke failed
+        if: failure()
+        env:
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          TEXT="🔴 <b>Smoke-test FAILED</b>%0A"
+          TEXT+="Фронт НЕ открывается: ${{ vars.VERCEL_URL }}%0A"
+          TEXT+="🔗 <a href='https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'>Logs</a>"
+          curl -s -X POST \
+            "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+            -d "chat_id=${CHAT_ID}&parse_mode=HTML&text=${TEXT}"
