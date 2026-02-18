@@ -7,8 +7,8 @@ require_once __DIR__ . '/../config/config.php';
 
 $token = TELEGRAM_BOT_TOKEN;
 
-// Webhook URL - замените на ваш реальный URL
-$webhookUrl = "https://new-emus-say.loca.lt/NLTv1/backend/bot/webhook.php";
+// Webhook URL — Railway backend
+$webhookUrl = getenv('WEBHOOK_URL') ?: "https://neverlands-production.up.railway.app/bot/webhook.php";
 
 echo "Настройка webhook...\n";
 echo "URL: {$webhookUrl}\n\n";
