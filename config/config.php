@@ -27,9 +27,9 @@ define('API_VERSION', 'v1');
 define('BASE_PATH', dirname(__DIR__));
 define('UPLOAD_PATH', BASE_PATH . '/uploads/');
 
-// Telegram Bot Configuration (для production)
-define('TELEGRAM_BOT_TOKEN', '7976741524:AAHlIZLf2Cl_uLPBPqlaavDjL7XbUj5z5HE');
-define('TELEGRAM_BOT_USERNAME', 'neverlands_bot'); // Замените на имя вашего бота
+// Telegram Bot Configuration (из переменных окружения)
+define('TELEGRAM_BOT_TOKEN', getenv('TELEGRAM_BOT_TOKEN') ?: '');
+define('TELEGRAM_BOT_USERNAME', getenv('TELEGRAM_BOT_USERNAME') ?: 'neverlands_bot');
 
 // Session configuration
 ini_set('session.cookie_httponly', 1);
@@ -52,7 +52,7 @@ function jsonResponse($data, $statusCode = 200) {
 }
 
 function jsonError($message, $statusCode = 400) {
-    jsonResponse(['success' => false, 'error' => $message], $statusCode);
+    jsonResponse(['success' => false, 'message' => $message], $statusCode);
 }
 
 function jsonSuccess($data = null, $message = 'Success') {

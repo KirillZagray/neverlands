@@ -1,7 +1,6 @@
 <?php
 /**
  * Router for Railway deployment
- * Redirects /api/* requests to api/ folder
  */
 
 // CORS headers
@@ -15,23 +14,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-// Get the request URI
-$requestUri = $_SERVER['REQUEST_URI'];
+$path = ltrim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
 
-// Remove query string
-$path = parse_url($requestUri, PHP_URL_PATH);
-
-// Remove leading slash
-$path = ltrim($path, '/');
-
-// If path starts with 'api', route to api/index.php
-if (strpos($path, 'api') === 0 || strpos($path, 'api/') === 0) {
-    // Modify REQUEST_URI to remove /api prefix for the API router
-    $_SERVER['REQUEST_URI'] = '/' . substr($path, 4); // Remove 'api/' or 'api'
+// Route /api/* → api/index.php
+if (strpos($path, 'api') === 0) {
+    $_SERVER['REQUEST_URI'] = '/' . substr($path, strlen('api'));
     if (empty($_SERVER['REQUEST_URI']) || $_SERVER['REQUEST_URI'] === '/') {
         $_SERVER['REQUEST_URI'] = '/index';
     }
-    // Add back query string
     if (!empty($_SERVER['QUERY_STRING'])) {
         $_SERVER['REQUEST_URI'] .= '?' . $_SERVER['QUERY_STRING'];
     }
@@ -39,19 +29,53 @@ if (strpos($path, 'api') === 0 || strpos($path, 'api/') === 0) {
     exit;
 }
 
-// Default response
-header('Content-Type: application/json');
-echo json_encode([
-    'success' => true,
-    'message' => 'NeverLands Backend API',
-    'version' => '1.0',
-    'endpoints' => [
-        '/api/auth',
-        '/api/player',
-        '/api/inventory',
-        '/api/market',
-        '/api/map',
-        '/api/chat',
-        '/api/battle'
-    ]
-]);
+// Route /bot/* → bot files
+if (strpos($path, 'bot/') === 0) {
+    $botFile = __DIR__ . '/' . $path;
+    if (file_exists($botFile) && !is_dir($botFile)) {
+        require $botFile;
+        exit;
+    }
+}
+
+// Serve static frontend assets (referenced as /assets/... in index.html)
+if (strpos($path, 'assets/') === 0 || $path === 'favicon.ico' || $path === 'robots.txt') {
+    $staticFile = __DIR__ . '/frontend/build/' . $path;
+    if (file_exists($staticFile) && !is_dir($staticFile)) {
+        serveFile($staticFile);
+        exit;
+    }
+}
+
+// SPA fallback — serve frontend index.html for all other routes
+$indexFile = __DIR__ . '/frontend/build/index.html';
+if (file_exists($indexFile)) {
+    header('Content-Type: text/html; charset=utf-8');
+    readfile($indexFile);
+} else {
+    http_response_code(503);
+    echo json_encode(['error' => 'Frontend not built']);
+}
+
+function serveFile($filePath) {
+    $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+    $mimeTypes = [
+        'js'   => 'application/javascript',
+        'css'  => 'text/css',
+        'html' => 'text/html; charset=utf-8',
+        'json' => 'application/json',
+        'png'  => 'image/png',
+        'jpg'  => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'gif'  => 'image/gif',
+        'svg'  => 'image/svg+xml',
+        'ico'  => 'image/x-icon',
+        'woff' => 'font/woff',
+        'woff2'=> 'font/woff2',
+        'ttf'  => 'font/ttf',
+        'webp' => 'image/webp',
+    ];
+    $mime = $mimeTypes[$ext] ?? 'application/octet-stream';
+    header("Content-Type: $mime");
+    readfile($filePath);
+}
