@@ -52,7 +52,7 @@ function jsonResponse($data, $statusCode = 200) {
 }
 
 function jsonError($message, $statusCode = 400) {
-    jsonResponse(['success' => false, 'error' => $message], $statusCode);
+    jsonResponse(['success' => false, 'message' => $message], $statusCode);
 }
 
 function jsonSuccess($data = null, $message = 'Success') {
