@@ -1,9 +1,6 @@
 {
   "outputDirectory": "frontend/build",
-  "buildCommand": "echo 'using pre-built frontend'",
-  "installCommand": "echo 'skip'",
-  "framework": null,
-  "rewrites": [
-    { "source": "/((?!assets/).*)", "destination": "/index.html" }
-  ]
+  "buildCommand": "echo skip",
+  "installCommand": "echo skip",
+  "framework": null
 }
