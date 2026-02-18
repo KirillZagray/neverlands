@@ -2,9 +2,11 @@ import { render, screen } from '@testing-library/react'
 import { vi, describe, test, beforeEach } from 'vitest'
 import App from '../App.jsx'
 
-// Моки объявляем ДО импортов — vitest их поднимает (hoists)
-const mockLogin      = vi.fn()
-const mockGetPlayer  = vi.fn()
+// vi.hoisted гарантирует инициализацию ДО подъёма vi.mock наверх файла
+const { mockLogin, mockGetPlayer } = vi.hoisted(() => ({
+  mockLogin:     vi.fn(),
+  mockGetPlayer: vi.fn(),
+}))
 
 vi.mock('../api/auth.js',   () => ({ login:     mockLogin }))
 vi.mock('../api/player.js', () => ({ getPlayer: mockGetPlayer }))
