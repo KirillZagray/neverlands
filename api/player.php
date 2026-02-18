@@ -37,7 +37,7 @@ if ($request_method === 'GET') {
     $player = $result->fetch_assoc();
     $player['login'] = from_win($player['login']);
 
-    jsonSuccess($player, 'Данные персонажа получены');
+    jsonSuccess(['player' => $player], 'Данные персонажа получены');
 
 } elseif ($request_method === 'PUT') {
     // Прямое обновление статов (для внутреннего использования)

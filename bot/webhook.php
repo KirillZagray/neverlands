@@ -29,36 +29,37 @@ if (!$chatId) {
 
 // Handle commands
 if ($text === '/start') {
-    sendMessage($chatId, "🎮 Добро пожаловать в NeverLands!\n\nНажмите кнопку MENU внизу, чтобы начать игру!");
+    sendMessageWithButton($chatId, "🎮 Добро пожаловать в NeverLands!\n\nНажмите кнопку ниже, чтобы начать игру!");
     exit;
 }
 
 if ($text === '/help') {
-    sendMessage($chatId, "📖 Помощь:\n\n/start - Начать\n/help - Помощь\n\nИспользуйте кнопку MENU для запуска игры!");
+    sendMessageWithButton($chatId, "📖 Помощь:\n\n/start - Начать игру\n/help - Помощь\n\nНажмите кнопку, чтобы запустить игру!");
     exit;
 }
 
-// Send message function
 function sendMessage($chatId, $text) {
     $token = TELEGRAM_BOT_TOKEN;
-    $url = "https://api.telegram.org/bot{$token}/sendMessage";
+    $url   = "https://api.telegram.org/bot{$token}/sendMessage";
+    $data  = ['chat_id' => $chatId, 'text' => $text, 'parse_mode' => 'HTML'];
+    $opts  = ['http' => ['method' => 'POST', 'header' => 'Content-Type: application/json', 'content' => json_encode($data)]];
+    return json_decode(file_get_contents($url, false, stream_context_create($opts)), true);
+}
 
+function sendMessageWithButton($chatId, $text) {
+    $token     = TELEGRAM_BOT_TOKEN;
+    $url       = "https://api.telegram.org/bot{$token}/sendMessage";
+    $webAppUrl = "https://neverlands-three.vercel.app";
     $data = [
-        'chat_id' => $chatId,
-        'text' => $text,
-        'parse_mode' => 'HTML'
-    ];
-
-    $options = [
-        'http' => [
-            'method' => 'POST',
-            'header' => 'Content-Type: application/json',
-            'content' => json_encode($data)
+        'chat_id'      => $chatId,
+        'text'         => $text,
+        'parse_mode'   => 'HTML',
+        'reply_markup' => [
+            'inline_keyboard' => [[
+                ['text' => '🎮 Начать игру', 'web_app' => ['url' => $webAppUrl]]
+            ]]
         ]
     ];
-
-    $context = stream_context_create($options);
-    $result = file_get_contents($url, false, $context);
-
-    return json_decode($result, true);
+    $opts = ['http' => ['method' => 'POST', 'header' => 'Content-Type: application/json', 'content' => json_encode($data)]];
+    return json_decode(file_get_contents($url, false, stream_context_create($opts)), true);
 }
