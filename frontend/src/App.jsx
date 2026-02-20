@@ -59,10 +59,14 @@ function GameApp() {
   }
 
   if (authError) {
+    const noTg = !window.Telegram?.WebApp?.initData
     return (
       <div className="splash">
         <p className="err-icon">⚠️</p>
-        <p>{authError}</p>
+        {noTg
+          ? <p>Открой игру через Telegram — нажми кнопку «Играть 🎮» в боте</p>
+          : <p>{authError}</p>
+        }
         <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={() => window.location.reload()}>
           Повторить
         </button>
