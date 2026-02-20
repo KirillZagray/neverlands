@@ -1,50 +1,40 @@
 <?php
 /**
  * Setup Telegram Webhook
+ * Run this once after deploying to Railway to register the webhook URL.
+ * Access via: https://your-railway-url.up.railway.app/bot/setup-webhook.php
  */
 
 require_once __DIR__ . '/../config/config.php';
 
 $token = TELEGRAM_BOT_TOKEN;
 
-// Webhook URL - замените на ваш реальный URL
-$webhookUrl = "https://new-emus-say.loca.lt/NLTv1/backend/bot/webhook.php";
+// Auto-detect Railway URL
+$host = getenv('RAILWAY_PUBLIC_DOMAIN') ?: ($_SERVER['HTTP_HOST'] ?? null);
+if (!$host) {
+    die("❌ Cannot detect host. Set RAILWAY_PUBLIC_DOMAIN env var or access via HTTP.\n");
+}
+
+$webhookUrl = "https://{$host}/bot/webhook.php";
 
 echo "Настройка webhook...\n";
 echo "URL: {$webhookUrl}\n\n";
 
-// Set webhook
 $url = "https://api.telegram.org/bot{$token}/setWebhook";
+$data = ['url' => $webhookUrl, 'allowed_updates' => ['message', 'callback_query']];
+$options = ['http' => ['method' => 'POST', 'header' => 'Content-Type: application/json', 'content' => json_encode($data)]];
 
-$data = [
-    'url' => $webhookUrl,
-    'allowed_updates' => ['message', 'callback_query']
-];
-
-$options = [
-    'http' => [
-        'method' => 'POST',
-        'header' => 'Content-Type: application/json',
-        'content' => json_encode($data)
-    ]
-];
-
-$context = stream_context_create($options);
-$result = file_get_contents($url, false, $context);
+$result   = file_get_contents($url, false, stream_context_create($options));
 $response = json_decode($result, true);
 
-if ($response['ok']) {
+if ($response['ok'] ?? false) {
     echo "✅ Webhook успешно настроен!\n";
-    echo json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-    echo "\n\nТеперь бот будет отвечать на команды /start и /help\n";
+    echo "URL: {$webhookUrl}\n";
 } else {
-    echo "❌ Ошибка настройки webhook:\n";
+    echo "❌ Ошибка:\n";
     echo json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 }
 
-// Check webhook status
-echo "\n\n=== Проверка webhook ===\n";
-$infoUrl = "https://api.telegram.org/bot{$token}/getWebhookInfo";
-$info = file_get_contents($infoUrl);
-$infoData = json_decode($info, true);
-echo json_encode($infoData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+echo "\n\n=== Статус webhook ===\n";
+$info = file_get_contents("https://api.telegram.org/bot{$token}/getWebhookInfo");
+echo json_encode(json_decode($info, true), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
