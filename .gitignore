@@ -2,5 +2,4 @@ node_modules/
 .env.local
 .DS_Store
 *.log
-/frontend/build/
 npm-debug.log*
