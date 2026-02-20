@@ -12,7 +12,7 @@ export async function apiFetch(path, options = {}) {
   })
   const data = await res.json()
   if (!data.success) {
-    throw new Error(data.message || `Ошибка ${res.status}`)
+    throw new Error(data.error || data.message || `Ошибка ${res.status}`)
   }
   return data
 }
