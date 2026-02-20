@@ -6,7 +6,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://neverlands-production.up.railway.app/api/:path*"
+      "destination": "https://neverlands-production-430a.up.railway.app/api/:path*"
     },
     {
       "source": "/(.*)",
