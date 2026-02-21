@@ -21,6 +21,7 @@ $segments = explode('/', $path);
 $endpoint = $segments[0] ?? 'index';
 
 // Debug
+header('X-Debug-Request-URI: ' . ($_SERVER['REQUEST_URI'] ?? 'NULL'));
 header('X-Debug-Path: ' . $path);
 header('X-Debug-Endpoint: ' . $endpoint);
 
