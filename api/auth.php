@@ -81,6 +81,9 @@ if ($request_method === 'POST') {
 
     // Проверить существующего пользователя
     $stmt = $db->prepare("SELECT * FROM user WHERE telegram_id = ? LIMIT 1");
+    if (!$stmt) {
+        jsonError('DB prepare error: ' . $db->getConnection()->error, 500);
+    }
     $stmt->bind_param('i', $telegramId);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -120,6 +123,9 @@ if ($request_method === 'POST') {
                 '', '', '', '', '', '', ''
             )
         ");
+        if (!$insertStmt) {
+            jsonError('DB prepare error (insert): ' . $db->getConnection()->error, 500);
+        }
         $insertStmt->bind_param('is', $telegramId, $login);
 
         if ($insertStmt->execute()) {

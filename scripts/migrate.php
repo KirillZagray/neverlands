@@ -100,6 +100,14 @@ CREATE TABLE IF NOT EXISTS `user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 ", "CREATE TABLE user");
 
+// Ensure critical columns exist in case table was created by an older schema
+run($db, "ALTER TABLE `user` ADD COLUMN IF NOT EXISTS `telegram_id` BIGINT NOT NULL DEFAULT 0", "ADD telegram_id");
+run($db, "ALTER TABLE `user` ADD COLUMN IF NOT EXISTS `level`       INT    NOT NULL DEFAULT 0", "ADD level");
+run($db, "ALTER TABLE `user` ADD COLUMN IF NOT EXISTS `nv`          INT    NOT NULL DEFAULT 100", "ADD nv");
+run($db, "ALTER TABLE `user` ADD COLUMN IF NOT EXISTS `last`        INT    NOT NULL DEFAULT 0", "ADD last");
+// Add unique index on telegram_id if missing (ignore error if already exists)
+@$db->query("ALTER TABLE `user` ADD UNIQUE KEY `telegram_id` (`telegram_id`)");
+
 // ═══════════════════════════════════════════════════════════
 //  TABLE: items
 // ═══════════════════════════════════════════════════════════
