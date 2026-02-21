@@ -20,7 +20,7 @@ $path = trim($path, '/');
 // Route to appropriate handler
 $endpoint = $path;
 
-if (empty($endpoint) || $endpoint === 'api') {
+if (empty($endpoint) || $endpoint === 'api' || $endpoint === 'index') {
     jsonSuccess([
         'api' => 'NeverLands Telegram Mini App',
         'version' => API_VERSION,
