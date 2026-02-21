@@ -15,6 +15,7 @@ $path = parse_url($request_uri, PHP_URL_PATH);
 $path = str_replace('/api/index.php', '', $path); // Remove /api/index.php
 $path = str_replace('/index', '', $path); // Remove /index
 $path = trim($path, '/');
+$path = trim($path, '/'); // Remove double slashes
 
 // Parse path segments
 $segments = explode('/', $path);
