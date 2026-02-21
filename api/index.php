@@ -28,6 +28,11 @@ if ($endpoint === 'index.php' || empty($endpoint)) {
     $endpoint = 'index';
 }
 
+// Debug: return endpoint in response
+if (isset($_GET['debug'])) {
+    jsonSuccess(['path' => $path, 'endpoint' => $endpoint, 'segments' => $segments]);
+}
+
 // Route to appropriate handler
 try {
     switch ($endpoint) {
