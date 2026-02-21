@@ -31,13 +31,12 @@ if (strpos($path, 'bot/') === 0) {
 
 // Route /api/* → api/index.php
 if ($path === 'api' || strpos($path, 'api/') === 0) {
-    $_SERVER['REQUEST_URI'] = '/' . substr($path, 3); // remove 'api'
-    if (empty($_SERVER['REQUEST_URI']) || $_SERVER['REQUEST_URI'] === '/') {
-        $_SERVER['REQUEST_URI'] = '/index';
+    $newPath = '/' . substr($path, 3); // remove 'api'
+    if (empty($newPath) || $newPath === '/') {
+        $newPath = '/index';
     }
-    if (!empty($_SERVER['QUERY_STRING'])) {
-        $_SERVER['REQUEST_URI'] .= '?' . $_SERVER['QUERY_STRING'];
-    }
+    $_SERVER['REQUEST_URI'] = $newPath . (!empty($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '');
+    header('X-Debug-Root: ' . $_SERVER['REQUEST_URI']); // DEBUG
     require __DIR__ . '/api/index.php';
     exit;
 }
