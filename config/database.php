@@ -15,12 +15,12 @@ class Database {
     private $charset;
 
     private function __construct() {
-        // Read from environment variables or use defaults
-        $this->host     = getenv('DB_HOST')    ?: 'localhost';
-        $this->port     = (int)(getenv('DB_PORT') ?: 3306);
-        $this->database = getenv('DB_NAME')    ?: 'railway';
-        $this->username = getenv('DB_USER')    ?: 'root';
-        $this->password = getenv('DB_PASS')    ?: 'root';
+        // Read from environment variables (Railway-style names take precedence, DB_* as fallback)
+        $this->host     = getenv('MYSQLHOST')     ?: getenv('DB_HOST')    ?: 'localhost';
+        $this->port     = (int)(getenv('MYSQLPORT')     ?: getenv('DB_PORT')    ?: 3306);
+        $this->database = getenv('MYSQLDATABASE') ?: getenv('DB_NAME')    ?: 'railway';
+        $this->username = getenv('MYSQLUSER')     ?: getenv('DB_USER')    ?: 'root';
+        $this->password = getenv('MYSQLPASSWORD') ?: getenv('DB_PASS')    ?: '';
         $this->charset  = getenv('DB_CHARSET') ?: 'utf8mb4';
 
         error_log("Database config - Host: {$this->host}:{$this->port}, DB: {$this->database}");
