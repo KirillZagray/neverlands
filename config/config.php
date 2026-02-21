@@ -3,9 +3,10 @@
  * Main Configuration
  */
 
-// Error reporting
+// Error reporting — никогда не выводим ошибки в тело ответа (ломает JSON)
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
+ini_set('log_errors', 1);
 
 // Timezone
 date_default_timezone_set('Europe/Moscow');
@@ -35,13 +36,15 @@ define('TELEGRAM_BOT_USERNAME', getenv('TELEGRAM_BOT_USERNAME') ?: 'neverlands_b
 ini_set('session.cookie_httponly', 1);
 ini_set('session.use_strict_mode', 1);
 
-// Encoding helper
+// Encoding helpers — DB использует utf8mb4, строки хранятся как UTF-8
+// t()        — раньше конвертировала в cp1251, теперь pass-through
+// from_win() — раньше конвертировала из cp1251, теперь pass-through
 function t($text) {
-    return iconv('UTF-8', 'WINDOWS-1251//IGNORE', $text);
+    return (string)$text;
 }
 
 function from_win($text) {
-    return iconv('WINDOWS-1251', 'UTF-8//IGNORE', $text);
+    return (string)$text;
 }
 
 // JSON response helper

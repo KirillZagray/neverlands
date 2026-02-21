@@ -19,7 +19,7 @@ class Database {
         $this->database = getenv('DB_NAME') ?: 'nl';
         $this->username = getenv('DB_USER') ?: 'root';
         $this->password = getenv('DB_PASS') ?: 'root';
-        $this->charset = getenv('DB_CHARSET') ?: 'cp1251';
+        $this->charset = getenv('DB_CHARSET') ?: 'utf8mb4';
 
         error_log("Database config - Host: {$this->host}, DB: {$this->database}, User: {$this->username}");
 
