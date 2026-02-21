@@ -16,6 +16,9 @@ $path = str_replace('/api/index.php', '', $path); // Remove /api/index.php
 $path = str_replace('/index', '', $path); // Remove /index
 $path = trim($path, '/');
 
+// Debug
+error_log("Path: $path, Endpoint: " . ($segments[0] ?? 'empty'));
+
 // Parse path segments
 $segments = explode('/', $path);
 $endpoint = $segments[0] ?? 'index';
