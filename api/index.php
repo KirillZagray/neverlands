@@ -12,10 +12,10 @@ $request_method = $_SERVER['REQUEST_METHOD'];
 
 // Remove query string and base path
 $path = parse_url($request_uri, PHP_URL_PATH);
-$path = str_replace('/api/index.php', '', $path); // Remove /api/index.php
-$path = str_replace('/index', '', $path); // Remove /index
-$path = trim($path, '/');
-$path = trim($path, '/'); // Remove double slashes
+$path = preg_replace('#^/+#', '', $path); // Remove leading slashes
+$path = preg_replace('#/+$#', '', $path); // Remove trailing slashes
+$path = str_replace('/api/index.php', '', $path);
+$path = str_replace('/index', '', $path);
 
 // Parse path segments
 $segments = explode('/', $path);
