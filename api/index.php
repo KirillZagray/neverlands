@@ -20,6 +20,12 @@ $path = trim($path, '/');
 $segments = explode('/', $path);
 $endpoint = $segments[0] ?? 'index';
 
+// Debug - check path
+if ($endpoint === 'auth') {
+    require_once __DIR__ . '/auth.php';
+    exit;
+}
+
 // If endpoint is index.php or empty, default to index
 if ($endpoint === 'index.php' || empty($endpoint)) {
     $endpoint = 'index';
