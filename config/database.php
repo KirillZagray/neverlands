@@ -15,12 +15,23 @@ class Database {
     private $charset;
 
     private function __construct() {
-        // Read from environment variables (Railway-style names take precedence, DB_* as fallback)
-        $this->host     = getenv('MYSQLHOST')     ?: getenv('DB_HOST')    ?: 'localhost';
-        $this->port     = (int)(getenv('MYSQLPORT')     ?: getenv('DB_PORT')    ?: 3306);
-        $this->database = getenv('MYSQLDATABASE') ?: getenv('DB_NAME')    ?: 'railway';
-        $this->username = getenv('MYSQLUSER')     ?: getenv('DB_USER')    ?: 'root';
-        $this->password = getenv('MYSQLPASSWORD') ?: getenv('DB_PASS')    ?: '';
+        // Support MYSQL_URL / DATABASE_URL (Railway "Connect" one-liner)
+        $url = getenv('MYSQL_URL') ?: getenv('DATABASE_URL') ?: '';
+        if ($url) {
+            $p = parse_url($url);
+            $this->host     = $p['host']                  ?? 'localhost';
+            $this->port     = (int)($p['port']            ?? 3306);
+            $this->database = ltrim($p['path'] ?? 'railway', '/');
+            $this->username = $p['user']                  ?? 'root';
+            $this->password = $p['pass']                  ?? '';
+        } else {
+            // Individual Railway-style names, then DB_* fallback
+            $this->host     = getenv('MYSQLHOST')     ?: getenv('DB_HOST')    ?: 'localhost';
+            $this->port     = (int)(getenv('MYSQLPORT')     ?: getenv('DB_PORT')    ?: 3306);
+            $this->database = getenv('MYSQLDATABASE') ?: getenv('DB_NAME')    ?: 'railway';
+            $this->username = getenv('MYSQLUSER')     ?: getenv('DB_USER')    ?: 'root';
+            $this->password = getenv('MYSQLPASSWORD') ?: getenv('DB_PASS')    ?: '';
+        }
         $this->charset  = getenv('DB_CHARSET') ?: 'utf8mb4';
 
         error_log("Database config - Host: {$this->host}:{$this->port}, DB: {$this->database}");
