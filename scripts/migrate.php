@@ -7,18 +7,31 @@
 
 // Load config (defines DB_* constants and helpers)
 // We need a minimal bootstrap without headers
-define('DB_HOST',    getenv('DB_HOST')    ?: 'localhost');
-define('DB_NAME',    getenv('DB_NAME')    ?: 'railway');
-define('DB_USER',    getenv('DB_USER')    ?: 'root');
-define('DB_PASS',    getenv('DB_PASS')    ?: 'root');
-define('DB_CHARSET', getenv('DB_CHARSET') ?: 'utf8mb4');
+$host    = getenv('DB_HOST') ?: 'localhost';
+$name    = getenv('DB_NAME') ?: 'railway';
+$user    = getenv('DB_USER') ?: 'root';
+$pass    = getenv('DB_PASS') ?: 'root';
+$port    = (int)(getenv('DB_PORT') ?: 3306);
 
-echo "[migrate] Connecting to " . DB_HOST . "/" . DB_NAME . " ...\n";
+echo "[migrate] Connecting to {$host}:{$port}/{$name} ...\n";
 
-$db = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+// Retry up to 10 times with 3-second pauses (MySQL may still be starting)
+$db      = null;
+$retries = 10;
+for ($i = 1; $i <= $retries; $i++) {
+    $db = new mysqli($host, $user, $pass, $name, $port);
+    if (!$db->connect_error) {
+        break;
+    }
+    echo "[migrate] Attempt {$i}/{$retries} failed: " . $db->connect_error . "\n";
+    if ($i < $retries) {
+        sleep(3);
+    }
+}
+
 if ($db->connect_error) {
-    echo "[migrate] ERROR: Connection failed: " . $db->connect_error . "\n";
-    exit(1);
+    echo "[migrate] Could not connect after {$retries} attempts — skipping migration.\n";
+    exit(0); // не роняем деплой, сервер всё равно стартует
 }
 $db->set_charset('utf8mb4');
 echo "[migrate] Connected OK\n";
