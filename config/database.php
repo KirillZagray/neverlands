@@ -8,6 +8,7 @@ class Database {
     private $connection;
 
     private $host;
+    private $port;
     private $database;
     private $username;
     private $password;
@@ -15,20 +16,22 @@ class Database {
 
     private function __construct() {
         // Read from environment variables or use defaults
-        $this->host = getenv('DB_HOST') ?: 'localhost';
-        $this->database = getenv('DB_NAME') ?: 'nl';
-        $this->username = getenv('DB_USER') ?: 'root';
-        $this->password = getenv('DB_PASS') ?: 'root';
-        $this->charset = getenv('DB_CHARSET') ?: 'utf8mb4';
+        $this->host     = getenv('DB_HOST')    ?: 'localhost';
+        $this->port     = (int)(getenv('DB_PORT') ?: 3306);
+        $this->database = getenv('DB_NAME')    ?: 'railway';
+        $this->username = getenv('DB_USER')    ?: 'root';
+        $this->password = getenv('DB_PASS')    ?: 'root';
+        $this->charset  = getenv('DB_CHARSET') ?: 'utf8mb4';
 
-        error_log("Database config - Host: {$this->host}, DB: {$this->database}, User: {$this->username}");
+        error_log("Database config - Host: {$this->host}:{$this->port}, DB: {$this->database}");
 
         try {
             $this->connection = new mysqli(
                 $this->host,
                 $this->username,
                 $this->password,
-                $this->database
+                $this->database,
+                $this->port
             );
 
             if ($this->connection->connect_error) {
