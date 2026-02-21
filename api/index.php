@@ -20,6 +20,10 @@ $path = trim($path, '/');
 $segments = explode('/', $path);
 $endpoint = $segments[0] ?? 'index';
 
+// Debug
+header('X-Debug-Path: ' . $path);
+header('X-Debug-Endpoint: ' . $endpoint);
+
 // Debug - check path
 if ($endpoint === 'auth') {
     require_once __DIR__ . '/auth.php';
