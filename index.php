@@ -31,12 +31,13 @@ if (strpos($path, 'bot/') === 0) {
 
 // Route /api/* → api/index.php
 if ($path === 'api' || strpos($path, 'api/') === 0) {
-    $newPath = '/' . substr($path, 3); // remove 'api'
-    if (empty($newPath) || $newPath === '/') {
+    $newPath = substr($path, 3); // remove 'api' prefix
+    $newPath = ltrim($newPath, '/'); // remove leading slashes
+    $newPath = '/' . $newPath; // add single leading slash
+    if ($newPath === '/') {
         $newPath = '/index';
     }
     $_SERVER['REQUEST_URI'] = $newPath . (!empty($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '');
-    header('X-Debug-Root: ' . $_SERVER['REQUEST_URI']); // DEBUG
     require __DIR__ . '/api/index.php';
     exit;
 }
