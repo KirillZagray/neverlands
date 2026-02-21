@@ -12,9 +12,7 @@ $request_method = $_SERVER['REQUEST_METHOD'];
 
 // Remove query string and base path
 $path = parse_url($request_uri, PHP_URL_PATH);
-$path = str_replace('/NLTv1/backend/api', '', $path);
 $path = str_replace('/api/index.php', '', $path); // Remove /api/index.php
-$path = str_replace('/api', '', $path); // Remove /api prefix
 $path = str_replace('/index', '', $path); // Remove /index
 $path = trim($path, '/');
 
