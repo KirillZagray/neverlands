@@ -4,7 +4,12 @@
  */
 
 require_once __DIR__ . '/../config/config.php';
-require_once __DIR__ . '/../config/database.php';
+// Database connection - make it optional to debug
+try {
+    require_once __DIR__ . '/../config/database.php';
+} catch (Exception $e) {
+    error_log('Database connection failed: ' . $e->getMessage());
+}
 
 // Simple routing
 $request_uri = $_SERVER['REQUEST_URI'];
