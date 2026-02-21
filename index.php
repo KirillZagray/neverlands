@@ -38,6 +38,10 @@ if ($path === 'api' || strpos($path, 'api/') === 0) {
         $newPath = '/index';
     }
     $_SERVER['REQUEST_URI'] = $newPath . (!empty($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '');
+    
+    // Debug
+    error_log('Routing to api/index.php with URI: ' . $_SERVER['REQUEST_URI']);
+    
     require __DIR__ . '/api/index.php';
     exit;
 }

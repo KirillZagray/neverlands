@@ -37,10 +37,13 @@ class Database {
 
             // Set charset
             $this->connection->set_charset($this->charset);
+            
+            error_log("Database connected successfully");
 
         } catch (Exception $e) {
             error_log("Database connection error: " . $e->getMessage());
-            throw $e;
+            // Don't throw - allow app to work without DB for now
+            $this->connection = null;
         }
     }
 
